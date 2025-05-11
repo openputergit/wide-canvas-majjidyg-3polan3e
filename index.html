@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OrderXerox - Print Service Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        .poppins {
+            font-family: 'Poppins', sans-serif;
+        }
+        .loading {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div id="loading" class="loading">
+        <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-600"></div>
+    </div>
+
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="#" class="text-2xl font-bold text-blue-600">OrderXerox</a>
+                </div>
+                <div class="flex items-center space-x-4" id="navButtons">
+                    <button onclick="showLogin()" class="bg-blue-600 text-white px-4 py-2 rounded-lg">Login</button>
+                    <button onclick="showRegister()" class="bg-green-600 text-white px-4 py-2 rounded-lg">Register</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div id="welcomePage" class="max-w-7xl mx-auto mt-10 px-4">
+        <div class="text-center">
+            <h1 class="text-4xl font-bold text-gray-800 mb-6">Welcome to OrderXerox</h1>
+            <p class="text-xl text-gray-600 mb-8">Your one-stop solution for all printing needs</p>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <i class="bi bi-printer text-4xl text-blue-600"></i>
+                    <h3 class="text-xl font-semibold mt-4">Easy Printing</h3>
+                    <p class="mt-2 text-gray-600">Upload and print your documents from anywhere</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <i class="bi bi-geo-alt text-4xl text-blue-600"></i>
+                    <h3 class="text-xl font-semibold mt-4">Local Merchants</h3>
+                    <p class="mt-2 text-gray-600">Find printing stores near you</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <i class="bi bi-clock text-4xl text-blue-600"></i>
+                    <h3 class="text-xl font-semibold mt-4">Track Orders</h3>
+                    <p class="mt-2 text-gray-600">Real-time order tracking</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-96">
+            <h2 class="text-2xl font-bold mb-6">Login</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-gray-700">Email</label>
+                    <input type="email" id="loginEmail" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
+                </div>
+                <div>
+                    <label class="block text-gray-700">Password</label>
+                    <input type="password" id="loginPassword" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
+                </div>
+                <div>
+                    <label class="block text-gray-700">User Type</label>
+                    <select id="loginUserType" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                        <option value="customer">Customer</option>
+                        <option value="merchant">Merchant</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <button onclick="login()" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Login</button>
+                <button onclick="hideLogin()" class="w-full mt-2 bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="registerModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-96 max-h-[90vh] overflow-y-auto">
+            <h2 class="text-2xl font-bold mb-6">Register</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-gray-700">User Type</label>
+                    <select id="registerUserType" onchange="toggleRegistrationFields()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                        <option value="customer">Customer</option>
+                        <option value="merchant">Merchant</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-700">Name</label>
+                    <input type="text" id="registerName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
+                </div>
+                <div>
+                    <label class="block text-gray-700">Email</label>
+                    <input type="email" id="registerEmail" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
+                </div>
+                <div>
+                    <label class="block text-gray-700">Password</label>
+                    <input type="password" id="registerPassword" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
+                </div>
+                <div>
+                    <label class="block text-gray-700">Age</label>
+                    <input type="number" id="registerAge" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
+                </div>
+                <div>
+                    <label class="block text-gray-700">Profile Image</label>
+                    <input type="file" id="registerProfileImage" accept="image/*" class="mt-1 block w-full">
+                </div>
+                <div>
+                    <label class="block text-gray-700">State</label>
+                    <input type="text" id="registerState" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
+                </div>
+                <div>
+                    <label class="block text-gray-700">District</label>
+                    <input type="text" id="registerDistrict" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
+                </div>
+                <div>
+                    <label class="block text-gray-700">Taluk</label>
+                    <input type="text" id="registerTaluk" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
+                </div>
+                <div>
+                    <label class="block text-gray-700">City</label>
+                    <input type="text" id="registerCity" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
+                </div>
+
+                <!-- Merchant specific fields -->
+                <div id="merchantFields" class="hidden">
+                    <div>
+                        <label class="block text-gray-700">Store Name</label>
+                        <input type="text" id="storeName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700">Store Image</label>
+                        <input type="file" id="storeImage" accept="image/*" class="mt-1 block w-full">
+                    </div>
+                </div>
+
+                <button onclick="register()" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">Register</button>
+                <button onclick="hideRegister()" class="w-full mt-2 bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Dashboard -->
+    <div id="userDashboard" class="hidden max-w-7xl mx-auto mt-10 px-4">
+        <div class="grid md:grid-cols-3 gap-8">
+            <div class="col-span-2">
+                <div class="bg-white p-6 rounded-lg shadow mb-8">
+                    <h2 class="text-2xl font-bold mb-4">Upload Document</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-700">Document</label>
+                            <input type="file" id="documentUpload" accept=".pdf,image/*" class="mt-1 block w-full">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700">Print Specifications</label>
+                            <select id="printPattern" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                <option value="single">Single Side</option>
+                                <option value="double">Double Side</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700">Color</label>
+                            <select id="printColor" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                <option value="bw">Black & White</option>
+                                <option value="color">Color</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700">Frame</label>
+                            <select id="printFrame" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                <option value="none">None</option>
+                                <option value="simple">Simple</option>
+                                <option value="fancy">Fancy</option>
+                            </select>
+                        </div>
+                        <button onclick="searchStores()" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">Find Stores</button>
+                    </div>
+                </div>
+                <div id="storesList" class="bg-white p-6 rounded-lg shadow hidden">
+                    <h2 class="text-2xl font-bold mb-4">Nearby Stores</h2>
+                    <div id="storesContainer" class="space-y-4">
+                        <!-- Stores will be populated here -->
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="bg-white p-6 rounded-lg shadow mb-8">
+                    <h2 class="text-2xl font-bold mb-4">My Orders</h2>
+                    <div id="ordersList" class="space-y-4">
+                        <!-- Orders will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Merchant Dashboard -->
+    <div id="merchantDashboard" class="hidden max-w-7xl mx-auto mt-10 px-4">
+        <div class="grid md:grid-cols-2 gap-8">
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-2xl font-bold mb-4">Pending Orders</h2>
+                <div id="merchantPendingOrders" class="space-y-4">
+                    <!-- Pending orders will be populated here -->
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-2xl font-bold mb-4">Completed Orders</h2>
+                <div id="merchantCompletedOrders" class="space-y-4">
+                    <!-- Completed orders will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminDashboard" class="hidden max-w-7xl mx-auto mt-10 px-4">
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h2 class="text-2xl font-bold mb-4">Database Panel</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr>
+                            <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Collection</th>
+                            <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Documents</th>
+                            <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dbTable" class="bg-white divide-y divide-gray-200">
+                        <!-- Database entries will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        const appSlug = 'orderxerox-123456';
+        
+        async function uploadFile(file, userId) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('userId', userId);
+            formData.append('appSlug', appSlug);
+
+            showLoading();
+            try {
+                const response = await fetch('https://r0c8kgwocscg8gsokogwwsw4.zetaverse.one/storage/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer i99QDwhULkeSSKz5SClSZonLL3e2'
+                    },
+                    body: formData
+                });
+                const data = await response.json();
+                hideLoading();
+                return data.url;
+            } catch (error) {
+                hideLoading();
+                console.error('Error uploading file:', error);
+                return null;
+            }
+        }
+
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        async function register() {
+            const userType = document.getElementById('registerUserType').value;
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const age = document.getElementById('registerAge').value;
+            const state = document.getElementById('registerState').value;
+            const district = document.getElementById('registerDistrict').value;
+            const taluk = document.getElementById('registerTaluk').value;
+            const city = document.getElementById('registerCity').value;
+
+            if (!name || !email || !password || !age || !state || !district || !taluk || !city) {
+                swal('Error', 'Please fill all required fields', 'error');
+                return;
+            }
+
+            const profileImage = document.getElementById('registerProfileImage').files[0];
+            let profileImageUrl = '';
+            if (profileImage) {
+                profileImageUrl = await uploadFile(profileImage, email);
+            }
+
+            let userData = {
+                userType,
+                name,
+                email,
+                password,
+                age,
+                profileImage: profileImageUrl,
+                address: {
+                    state,
+                    district,
+                    taluk,
+                    city
+                }
+            };
+
+            if (userType === 'merchant') {
+                const storeName = document.getElementById('storeName').value;
+                const storeImage = document.getElementById('storeImage').files[0];
+                if (!storeName) {
+                    swal('Error', 'Please enter store name', 'error');
+                    return;
+                }
+                let storeImageUrl = '';
+                if (storeImage) {
+                    storeImageUrl = await uploadFile(storeImage, email);
+                }
+                userData = {
+                    ...userData,
+                    storeName,
+                    storeImage: storeImageUrl
+                };
+            }
+
+            showLoading();
+            try {
+                const response = await fetch('https://r0c8kgwocscg8gsokogwwsw4.zetaverse.one/mongodb', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer i99QDwhULkeSSKz5SClSZonLL3e2',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        appSlug,
+                        action: 'create',
+                        collection: 'users',
+                        data: userData
+                    })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    swal('Success', 'Registration successful!', 'success');
+                    hideRegister();
+                } else {
+                    swal('Error', 'Registration failed', 'error');
+                }
+            } catch (error) {
+                console.error('Error registering:', error);
+                swal('Error', 'Registration failed', 'error');
+            }
+            hideLoading();
+        }
+
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const userType = document.getElementById('loginUserType').value;
+
+            if (!email || !password) {
+                swal('Error', 'Please fill all fields', 'error');
+                return;
+            }
+
+            showLoading();
+            try {
+                const response = await fetch('https://r0c8kgwocscg8gsokogwwsw4.zetaverse.one/mongodb', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer i99QDwhULkeSSKz5SClSZonLL3e2',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        appSlug,
+                        action: 'read',
+                        collection: 'users',
+                        conditions: {
+                            email,
+                            password,
+                            userType
+                        }
+                    })
+                });
+                const data = await response.json();
+                if (data.success && data.result.length > 0) {
+                    currentUser = data.result[0];
+                    swal('Success', 'Login successful!', 'success');
+                    hideLogin();
+                    showDashboard(userType);
+                } else {
+                    swal('Error', 'Invalid credentials', 'error');
+                }
+            } catch (error) {
+                console.error('Error logging in:', error);
+                swal('Error', 'Login failed', 'error');
+            }
+            hideLoading();
+        }
+
+        function showDashboard(userType) {
+            document.getElementById('welcomePage').style.display = 'none';
+            document.getElementById('userDashboard').style.display = 'none';
+            document.getElementById('merchantDashboard').style.display = 'none';
+            document.getElementById('adminDashboard').style.display = 'none';
+
+            const navButtons = document.getElementById('navButtons');
+            navButtons.innerHTML = `
+                <span class="text-gray-700">Welcome, ${currentUser.name}</span>
+                <button onclick="logout()" class="bg-red-600 text-white px-4 py-2 rounded-lg">Logout</button>
+            `;
+
+            if (userType === 'customer') {
+                document.getElementById('userDashboard').style.display = 'block';
+                loadOrders();
+            } else if (userType === 'merchant') {
+                document.getElementById('merchantDashboard').style.display = 'block';
+                loadMerchantOrders();
+            } else if (userType === 'admin') {
+                document.getElementById('adminDashboard').style.display = 'block';
+                loadDatabase();
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('welcomePage').style.display = 'block';
+            document.getElementById('userDashboard').style.display = 'none';
+            document.getElementById('merchantDashboard').style.display = 'none';
+            document.getElementById('adminDashboard').style.display = 'none';
+
+            const navButtons = document.getElementById('navButtons');
+            navButtons.innerHTML = `
+                <button onclick="showLogin()" class="bg-blue-600 text-white px-4 py-2 rounded-lg">Login</button>
+                <button onclick="showRegister()" class="bg-green-600 text-white px-4 py-2 rounded-lg">Register</button>
+            `;
+        }
+
+        async function searchStores() {
+            const state = currentUser.address.state;
+            const district = currentUser.address.district;
+            const taluk = currentUser.address.taluk;
+            const city = currentUser.address.city;
+
+            showLoading();
+            try {
+                const response = await fetch('https://r0c8kgwocscg8gsokogwwsw4.zetaverse.one/mongodb', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer i99QDwhULkeSSKz5SClSZonLL3e2',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        appSlug,
+                        action: 'read',
+                        collection: 'users',
+                        conditions: {
+                            userType: 'merchant',
+                            'address.state': state,
+                            'address.district': district
+                        }
+                    })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    displayStores(data.result);
+                }
+            } catch (error) {
+                console.error('Error searching stores:', error);
+                swal('Error', 'Failed to find stores', 'error');
+            }
+            hideLoading();
+        }
+
+        function displayStores(stores) {
+            const storesList = document.getElementById('storesList');
+            const storesContainer = document.getElementById('storesContainer');
+            storesList.style.display = 'block';
+            
+            storesContainer.innerHTML = stores.map(store => `
+                <div class="border p-4 rounded-lg">
+                    <div class="flex items-center">
+                        ${store.storeImage ? `<img src="${store.storeImage}" alt="${store.storeName}" class="w-16 h-16 rounded-full object-cover mr-4">` : ''}
+                        <div>
+                            <h3 class="font-bold">${store.storeName}</h3>
+                            <p class="text-sm text-gray-600">${store.address.city}, ${store.address.district}</p>
+                        </div>
+                    </div>
+                    <button onclick="placeOrder('${store._id}')" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg">Place Order</button>
+                </div>
+            `).join('');
+        }
+
+        async function placeOrder(merchantId) {
+            const documentFile = document.getElementById('documentUpload').files[0];
+            if (!documentFile) {
+                swal('Error', 'Please upload a document', 'error');
+                return;
+            }
+
+            showLoading();
+            try {
+                const documentUrl = await uploadFile(documentFile, currentUser._id);
+                const orderData = {
+                    customerId: currentUser._id,
+                    merchantId,
+                    documentUrl,
+                    specifications: {
+                        pattern: document.getElementById('printPattern').value,
+                        color: document.getElementById('printColor').value,
+                        frame: document.getElementById('printFrame').value
+                    },
+                    status: 'pending',
+                    createdAt: new Date().toISOString()
+                };
+
+                const response = await fetch('https://r0c8kgwocscg8gsokogwwsw4.zetaverse.one/mongodb', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer i99QDwhULkeSSKz5SClSZonLL3e2',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        appSlug,
+                        action: 'create',
+                        collection: 'orders',
+                        data: orderData
+                    })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    swal('Success', 'Order placed successfully!', 'success');
+                    loadOrders();
+                } else {
+                    swal('Error', 'Failed to place order', 'error');
+                }
+            } catch (error) {
+                console.error('Error placing order:', error);
+                swal('Error', 'Failed to place order', 'error');
+            }
+            hideLoading();
+        }
+
+        function toggleRegistrationFields() {
+            const userType = document.getElementById('registerUserType').value;
+            const merchantFields = document.getElementById('merchantFields');
+            merchantFields.style.display = userType === 'merchant' ? 'block' : 'none';
+        }
+
+        // Modal controls
+        function showLogin() {
+            document.getElementById('loginModal').style.display = 'flex';
+        }
+
+        function hideLogin() {
+            document.getElementById('loginModal').style.display = 'none';
+        }
+
+        function showRegister() {
+            document.getElementById('registerModal').style.display = 'flex';
+        }
+
+        function hideRegister() {
+            document.getElementById('registerModal').style.display = 'none';
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add event listeners for closing modals when clicking outside
+            window.onclick = (event) => {
+                if (event.target === document.getElementById('loginModal')) {
+                    hideLogin();
+                }
+                if (event.target === document.getElementById('registerModal')) {
+                    hideRegister();
+                }
+            };
+        });
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
